@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # 定义目录
-HY2_DIR="/storage/emulated/0/hy2"
+HY2_DIR="~"
 
 # 检查是否为 root 用户
 if [ "$EUID" -ne 0 ]; then
