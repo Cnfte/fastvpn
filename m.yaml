@@ -1,0 +1,139 @@
+port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+unified-delay: true
+global-client-fingerprint: chrome
+dns:
+  enable: true
+  listen: :53
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver:
+    - 223.5.5.5
+    - 8.8.8.8
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fallback:
+    - https://1.0.0.1/dns-query
+    - tls://dns.google
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+      - 240.0.0.0/4
+
+proxies:
+- name: vless-reality-vision-s16-cnfte     
+  type: vless
+  server: 212.91.26.79                     
+  port: 17515                              
+  uuid: f7698e1d-cf1a-4e8a-8b67-754a29f840a7
+  network: tcp
+  udp: true
+  tls: true
+  flow: xtls-rprx-vision
+  servername: cnfte.serv00.net             
+  reality-opts:
+    public-key: 4cPp0RsmRPAtB6mGa3KhxP-Kxw5POAzACuwksO9GKCE
+  client-fingerprint: chrome               
+
+- name: vmess-ws-s16-cnfte                 
+  type: vmess
+  server: 212.91.26.79                     
+  port: 36267                              
+  uuid: f7698e1d-cf1a-4e8a-8b67-754a29f840a7
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: false
+  network: ws
+  servername: www.bing.com                 
+  ws-opts:
+    path: "/f7698e1d-cf1a-4e8a-8b67-754a29f840a7-vm"
+    headers:
+      Host: www.bing.com                   
+
+- name: hysteria2-s16-cnfte                
+  type: hysteria2                          
+  server: 212.91.26.79                     
+  port: 42300                              
+  password: f7698e1d-cf1a-4e8a-8b67-754a29f840a7
+  alpn:
+    - h3
+  sni: www.bing.com                        
+  skip-cert-verify: true
+  fast-open: true
+
+- name: vmess-tls-argo-s16-cnfte           
+  type: vmess
+  server: www.visa.com.hk                  
+  port: 8443                               
+  uuid: f7698e1d-cf1a-4e8a-8b67-754a29f840a7
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  network: ws
+  servername: nohappy.cnfte.x10.mx         
+  ws-opts:
+    path: "/f7698e1d-cf1a-4e8a-8b67-754a29f840a7-vm"
+    headers:
+      Host: nohappy.cnfte.x10.mx
+
+- name: vmess-argo-s16-cnfte               
+  type: vmess
+  server: www.visa.com.hk                  
+  port: 8880                               
+  uuid: f7698e1d-cf1a-4e8a-8b67-754a29f840a7
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: false
+  network: ws
+  servername: nohappy.cnfte.x10.mx         
+  ws-opts:
+    path: "/f7698e1d-cf1a-4e8a-8b67-754a29f840a7-vm"
+    headers:
+      Host: nohappy.cnfte.x10.mx
+
+proxy-groups:
+- name: Balance
+  type: load-balance
+  url: https://www.gstatic.com/generate_204  interval: 300
+  strategy: round-robin
+  proxies:
+    - vless-reality-vision-s16-cnfte       
+    - vmess-ws-s16-cnfte
+    - hysteria2-s16-cnfte
+    - vmess-tls-argo-s16-cnfte
+    - vmess-argo-s16-cnfte
+
+- name: Auto
+  type: url-test
+  url: https://www.gstatic.com/generate_204  interval: 300
+  tolerance: 50
+  proxies:
+    - vless-reality-vision-s16-cnfte       
+    - vmess-ws-s16-cnfte
+    - hysteria2-s16-cnfte
+    - vmess-tls-argo-s16-cnfte
+    - vmess-argo-s16-cnfte
+
+- name: Select
+  type: select
+  proxies:
+    - Balance                              
+    - Auto
+    - DIRECT
+    - vless-reality-vision-s16-cnfte       
+    - vmess-ws-s16-cnfte
+    - hysteria2-s16-cnfte
+    - vmess-tls-argo-s16-cnfte
+    - vmess-argo-s16-cnfte
+rules:
+  - GEOIP,LAN,DIRECT
+  - GEOIP,CN,DIRECT
+  - MATCH,Select
